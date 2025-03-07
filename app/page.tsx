@@ -76,7 +76,7 @@ const stats = [
 export default function Home() {
   return (
     // <div className="relative min-h-screen bg-black selection:bg-sky-500/20 overflow-hidden">
-    <main className="relative px-6 pt-32">
+    <main className="relative px-6 pt-32 selection:bg-violet-500/20">
       <div className="mx-auto max-w-5xl">
         {/* Hero Section */}
         <div className="flex flex-col items-center text-center">
