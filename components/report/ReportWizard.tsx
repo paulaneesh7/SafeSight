@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ReportForm from "./ReportForm";
 
 
 
@@ -18,7 +19,7 @@ export default function ReportWizard() {
 
   return (
     <div className="rounded-2xl bg-zinc-900 p-8">
-        {currentStep === 1 && }
+        {currentStep === 1 && <ReportForm onComplete={handleStepComplete}/>}
     </div>
   )
 }
