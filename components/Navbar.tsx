@@ -36,7 +36,7 @@ export default function Navbar() {
                   </svg>
                 </div>
                 <span className="text-lg font-semibold text-white">
-                  SafeReport
+                  SafeSight
                 </span>
               </Link>
             </div>

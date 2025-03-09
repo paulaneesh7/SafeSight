@@ -226,11 +226,11 @@ export default function ReportForm({ onComplete }: ReportFormProps) {
             {image ? (
               <div className="space-y-4">
                 <div className="w-full h-48 relative rounded-lg overflow-hidden">
-                  <Image
-                    src={image}
-                    alt="Preview"
-                    className="w-full h-full object-cover"
-                  />
+                <img
+                  src={image}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
                 </div>
                 <p className="text-sm text-zinc-400">Click to change image</p>
               </div>
