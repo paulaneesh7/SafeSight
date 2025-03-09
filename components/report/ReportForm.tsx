@@ -2,6 +2,7 @@
 import { useState, useCallback } from "react";
 import Image from "next/image";
 import { LocationInput } from "./LocationInput";
+import crypto from "crypto";
 
 const REPORT_TYPES = [
   "Theft",
@@ -38,11 +39,106 @@ export default function ReportForm({ onComplete }: ReportFormProps) {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleImageUpload = () => {};
+
+  // Image analysis function
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsAnalyzing(true);
+
+    try {
+      const base64 = await new Promise((resolve) => {
+        const reader = new FileReader(); // this will read the file and this case the image
+        reader.onloadend = () => resolve(reader.result); // reader.onloadend will resolve the promise with the result
+        reader.readAsDataURL(file);
+      });
+
+      const response = await fetch("/api/analyze-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: base64 }), // the gemini ai will need the base64 image to perform analysis
+      });
+
+      const data = await response.json();
+
+      if (data.title && data.description && data.reportType) {
+        setFormData((prev) => ({
+          ...prev,
+          title: data.title,
+          description: data.description,
+          specificType: data.reportType,
+        }));
+        setImage(base64 as string);
+      }
+    } catch (error) {
+      console.log("Error analyzing image:", error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  // generating random report id with crypto
+  const generateReportId = useCallback(() => {
+    const timestamp = Date.now().toString();
+    const randomByte = crypto.randomBytes(16).toString("hex");
+
+    const combinedString = `${timestamp}-${randomByte}`;
+
+    return crypto
+      .createHash("sha256")
+      .update(combinedString)
+      .digest("hex")
+      .slice(0, 16);
+  }, []);
+
+
+
+  // Form submit function
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setIsSubmitting(true);
+
+    try {
+      const reportData = {
+        reportId: generateReportId(),
+        type: formData.incidentType,
+        specificType: formData.specificType,
+        title: formData.title,
+        description: formData.description,
+        location: formData.location,
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+        image: image,
+        status: "PENDING",
+      }
+      const response = await fetch("/api/reports/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to submit report");
+      }
+
+      onComplete(result);
+
+    } catch (error) {
+      console.log("Error submitting reports:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
 
   return (
     <>
-      <form className="space-y-8">
+      <form className="space-y-8" onSubmit={handleSubmit}>
         {/* Emergency type selection */}
         <div className="grid grid-cols-2 gap-4">
           <button
@@ -265,7 +361,6 @@ export default function ReportForm({ onComplete }: ReportFormProps) {
             required
           />
         </div>
-
 
         {/* Submit Button */}
         <button
