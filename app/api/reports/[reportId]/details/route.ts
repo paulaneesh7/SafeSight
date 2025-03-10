@@ -4,9 +4,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { reportId: string } }
+  context: { params: { reportId: string } }
 ) {
   try {
+    const { params } = await context; // Await the context to get params
     const report = await prisma.report.findUnique({
       where: {
         reportId: params.reportId,
